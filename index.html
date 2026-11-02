@@ -1,0 +1,77 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>AIESEC in MUST Ranking</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--tx:#14213d;--mu:#5b6b86;--bd:#e1e8f2;--pr:#037ef3;--pr2:#e6f1fe;--gold:#f5b301;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1526;--card:#16213a;--tx:#eaf0fb;--mu:#98a7c4;--bd:#25324f;--pr:#4da3ff;--pr2:#1b2c4d}}
+:root[data-theme="dark"]{--bg:#0d1526;--card:#16213a;--tx:#eaf0fb;--mu:#98a7c4;--bd:#25324f;--pr:#4da3ff;--pr2:#1b2c4d}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+.w{max-width:860px;margin:0 auto;padding:20px 14px 40px}
+h1{margin:0;font-size:clamp(22px,5vw,30px)}.sub{color:var(--mu);font-size:14px;margin:4px 0 16px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{flex:1;padding:11px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;font-weight:600;font-size:15px;cursor:pointer}
+.tab.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.bar select,.bar input{flex:1;min-width:140px;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font-size:15px}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.rk{width:38px;height:38px;border-radius:50%;background:var(--pr2);color:var(--pr);display:grid;place-items:center;font-weight:700;flex:none}
+.top .rk{background:var(--gold);color:#3a2b00;font-size:18px}
+.nm{flex:1;min-width:0}.nm b{display:block;overflow-wrap:anywhere}.nm span{color:var(--mu);font-size:13px}
+.pt{font-size:22px;font-weight:800;color:var(--pr);text-align:end;flex:none}.pt small{display:block;font-size:11px;font-weight:500;color:var(--mu)}
+details{background:var(--card);border:1px solid var(--bd);border-radius:14px;margin-bottom:8px}
+details.top{border-color:var(--gold)}
+summary{list-style:none;cursor:pointer;padding:0;margin:0}summary::-webkit-details-marker{display:none}
+summary .row{margin:0;border:0;background:none}
+.mem{padding:0 14px 12px;border-top:1px solid var(--bd)}
+.mem div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:14px;border-bottom:1px dashed var(--bd)}
+.mem div:last-child{border:0}.mem em{color:var(--mu);font-style:normal;font-size:12px}
+.note{color:var(--mu);font-size:12px;margin-top:18px}.empty{text-align:center;color:var(--mu);padding:30px}
+</style></head><body><div class="w">
+<h1>🏆 AIESEC in MUST Ranking</h1><div class="sub" id="sub"></div>
+<div class="tabs"><button class="tab on" data-t="i">Individuals</button><button class="tab" data-t="t">Teams</button></div>
+<div class="bar"><select id="fn"></select><input id="q" type="search" placeholder="Search name…"></div>
+<div id="list"></div>
+<div class="note">Points: attendance = 2 pts per session · Full team attendance = +1 pt per member for each session where every team member attended (teams of 2+). Team name = team leader’s name for now.</div>
+</div>
+<script>
+var SHEET_URL="https://script.google.com/macros/s/AKfycbwZQ2RgNoEYHn4dSZjn50xHRh_p2VqtmGvfMxSBiObPfZzPiCoGTT75USKIf2qPPw5xrA/exec";
+var CFG=[{key:"BD",name:"BD",unit:"Deals",pts:20,per:1,c:0},{key:"OGV",name:"OGV",unit:"GV APD",pts:5,per:1,c:5},{key:"OGT",name:"OGT",unit:"GT APD",pts:7,per:1,c:10},{key:"B2C",name:"B2C",unit:"Sign-ups",pts:5,per:50,c:15},{key:"RAISING",name:"Raising",unit:"Slots",pts:3,per:1,c:20},{key:"ICX",name:"CONSEDRATION",unit:"ICX APD",pts:6,per:1,c:25}];
+var DATA=[];
+function parse(j){var v=j.values,b=j.bold;return CFG.map(function(f){var teams=[],cur=null;for(var r=2;r<v.length;r++){var n=String(v[r][f.c]||"").trim();if(!n){cur=null;continue}if(b[r][f.c]||!cur){cur={leader:n,members:[]};teams.push(cur)}cur.members.push({n:n,v:parseFloat(v[r][f.c+1])||0,a:parseFloat(v[r][f.c+3])||0})}return{key:f.key,name:f.name,unit:f.unit,pts:f.pts,per:f.per,teams:teams}})}
+var TEAM_NAMES={}; /* leader name -> team name */
+var ATT=2,tab="i";
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function build(){
+ var people=[],teams=[];
+ DATA.forEach(function(f){f.teams.forEach(function(t){
+  var big=t.members.length>=2,k=big?Math.min.apply(null,t.members.map(function(m){return m.a})):0;
+  var sum=0,ms=t.members.map(function(m){
+   var p=Math.floor(m.v/f.per)*f.pts+m.a*ATT+k;sum+=p;
+   var o={n:m.n,fn:f.name,fk:f.key,p:p,v:m.v,a:m.a,unit:f.unit,team:TEAM_NAMES[t.leader]||t.leader};people.push(o);return o});
+  teams.push({name:TEAM_NAMES[t.leader]||t.leader,leader:t.leader,fn:f.name,fk:f.key,p:sum,bonus:k,ms:ms})})});
+ return{people:people,teams:teams}}
+var B={people:[],teams:[]};
+function rank(a){a.sort(function(x,y){return y.p-x.p||x.n.localeCompare(y.n)});var r=0,last=null;a.forEach(function(x,i){if(x.p!==last){r=i+1;last=x.p}x.r=r})}
+function medal(r){return r==1?"🥇":r==2?"🥈":r==3?"🥉":r}
+function render(){
+ var fk=document.getElementById("fn").value,q=document.getElementById("q").value.toLowerCase(),h="";
+ if(tab=="i"){
+  var a=B.people.filter(function(x){return fk=="all"||x.fk==fk});rank(a);
+  a.filter(function(x){return !q||x.n.toLowerCase().indexOf(q)>-1}).forEach(function(x){
+   h+='<div class="row'+(x.r<=3&&x.p>0?" top":"")+'"><div class="rk">'+(x.p>0?medal(x.r):x.r)+'</div><div class="nm"><b>'+esc(x.n)+'</b><span>'+esc(x.fn)+" · "+esc(x.team)+" · "+x.v+" "+esc(x.unit)+" · "+x.a+' att.</span></div><div class="pt">'+x.p+'<small>pts</small></div></div>'})
+ }else{
+  var t=B.teams.filter(function(x){return fk=="all"||x.fk==fk});rank2(t);
+  t.filter(function(x){return !q||(x.name+x.ms.map(function(m){return m.n}).join(" ")).toLowerCase().indexOf(q)>-1}).forEach(function(x){
+   h+='<details'+(x.r<=3&&x.p>0?' class="top"':"")+'><summary><div class="row"><div class="rk">'+(x.p>0?medal(x.r):x.r)+'</div><div class="nm"><b>'+esc(x.name)+'</b><span>'+esc(x.fn)+" · "+x.ms.length+' member'+(x.ms.length>1?"s":"")+(x.bonus?" · +"+x.bonus+" full-attendance":"")+'</span></div><div class="pt">'+x.p+'<small>pts</small></div></div></summary><div class="mem">'+
+   x.ms.map(function(m){return"<div><span>"+esc(m.n)+" <em>"+m.v+" "+esc(m.unit)+" · "+m.a+" att.</em></span><b>"+m.p+"</b></div>"}).join("")+"</div></details>"})
+ }
+ document.getElementById("list").innerHTML=h||'<div class="empty">No results</div>'}
+function rank2(a){a.sort(function(x,y){return y.p-x.p||x.name.localeCompare(y.name)});var r=0,last=null;a.forEach(function(x,i){if(x.p!==last){r=i+1;last=x.p}x.r=r})}
+var sel=document.getElementById("fn");sel.innerHTML='<option value="all">All functions</option>'+CFG.map(function(f){return'<option value="'+f.key+'">'+esc(f.name)+"</option>"}).join("");
+sel.onchange=render;document.getElementById("q").oninput=render;
+document.querySelectorAll(".tab").forEach(function(b){b.onclick=function(){tab=b.dataset.t;document.querySelectorAll(".tab").forEach(function(x){x.classList.toggle("on",x==b)});render()}});
+function load(){fetch(SHEET_URL,{credentials:"omit"}).then(function(r){return r.json()}).then(function(j){DATA=parse(j);B=build();render();
+ document.getElementById("sub").textContent="Live from the sheet · updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}).catch(function(){
+ document.getElementById("sub").textContent="Couldn’t load the latest data — retrying…";if(!DATA.length)document.getElementById("list").innerHTML='<div class="empty">Couldn’t load the data. Refresh the page.</div>'})}
+document.getElementById("list").innerHTML='<div class="empty">Loading…</div>';
+load();setInterval(load,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
+</script></body></html>
