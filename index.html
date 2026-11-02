@@ -70,7 +70,7 @@ var sel=document.getElementById("fn");sel.innerHTML='<option value="all">All fun
 sel.onchange=render;document.getElementById("q").oninput=render;
 document.querySelectorAll(".tab").forEach(function(b){b.onclick=function(){tab=b.dataset.t;document.querySelectorAll(".tab").forEach(function(x){x.classList.toggle("on",x==b)});render()}});
 function load(){fetch(SHEET_URL,{credentials:"omit"}).then(function(r){return r.json()}).then(function(j){DATA=parse(j);B=build();render();
- document.getElementById("sub").textContent="Live from the sheet · updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}).catch(function(){
+ document.getElementById("sub").textContent=""🟢 Live" · updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}).catch(function(){
  document.getElementById("sub").textContent="Couldn’t load the latest data — retrying…";if(!DATA.length)document.getElementById("list").innerHTML='<div class="empty">Couldn’t load the data. Refresh the page.</div>'})}
 document.getElementById("list").innerHTML='<div class="empty">Loading…</div>';
 load();setInterval(load,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
